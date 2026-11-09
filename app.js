@@ -100,7 +100,7 @@ function setAuthError(id, message) {
 document.getElementById("toggle-auth").addEventListener("click", () => {
   const login = document.getElementById("login-form");
   const register = document.getElementById("register-form");
-  const registering = register.classList.toggle("hidden");
+  const registering = !register.classList.toggle("hidden");
   login.classList.toggle("hidden", registering);
   document.getElementById("auth-title").textContent = registering ? "建立 Habitly 帳號" : "登入 Habitly";
   document.getElementById("auth-subtitle").textContent = registering ? "建立帳號後開始養成你的第一個習慣。" : "登入後繼續管理你的習慣與日程。";
