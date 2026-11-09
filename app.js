@@ -1362,19 +1362,47 @@ friendIdInput.addEventListener("input", () => {
 });
 document.getElementById("open-friend").addEventListener("click", () => friendModal.classList.add("open"));
 document.getElementById("close-friend-modal").addEventListener("click", () => friendModal.classList.remove("open"));
-document.getElementById("send-friend-request").addEventListener("click", () => {
+document.getElementById("send-friend-request").addEventListener("click", async () => {
   const friendId = friendIdInput.value.trim();
   if (!friendId) {
     friendIdInput.focus();
     return;
   }
-  if (!appData.friends.some((friend) => friend.handle === friendId)) {
-    appData.friends.push({ id: `request-${Date.now()}`, name: friendId, handle: friendId, status: "pending" });
-    localStorage.setItem("habitly-app-data", JSON.stringify(appData));
-    persistCurrentData();
+  if (supabaseEnabled && supabaseUser) {
+    const { error } = await supabaseClient.rpc("send_habitly_friend_request", { target_handle: friendId });
+    if (error) {
+      window.alert(`好友邀請失敗：${error.message}`);
+      return;
+    }
+    window.alert("好友邀請已送出，對方登入後即可看到。");
+  } else {
+    if (!appData.friends.some((friend) => friend.handle === friendId)) {
+      appData.friends.push({ id: `request-${Date.now()}`, name: friendId, handle: friendId, status: "pending" });
+      localStorage.setItem("habitly-app-data", JSON.stringify(appData));
+      persistCurrentData();
+    }
+    window.alert("目前為離線模式，好友邀請只會保存在本機。");
   }
   friendIdInput.value = "";
   friendModal.classList.remove("open");
+});
+
+document.getElementById("share-post").addEventListener("click", async () => {
+  const body = window.prompt("想分享什麼進度？");
+  if (!body?.trim()) return;
+  if (!supabaseEnabled || !supabaseUser) {
+    window.alert("請先登入雲端帳號後再分享。");
+    return;
+  }
+  const { error } = await supabaseClient.from("habitly_posts").insert({
+    user_id: supabaseUser.id,
+    body: body.trim()
+  });
+  if (error) {
+    window.alert(`分享失敗：${error.message}`);
+    return;
+  }
+  window.alert("已成功分享至社群。");
 });
 
 document.getElementById("logout").addEventListener("click", () => {
