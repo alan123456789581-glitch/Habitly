@@ -378,13 +378,17 @@ document.getElementById("save-reflection").addEventListener("click", () => {
     if (logIndex >= 0) habit.logs[logIndex] = { ...habit.logs[logIndex], ...log };
     else habit.logs.push(log);
     if (status === "completed" && !alreadyCompleted) {
-      appData.user.xp = Number(appData.user.xp || 0) + Number(habit.xp || 0);
+      const schedule = (appData.schedule[date] || []).find((item) => item.habitId === habit.id);
+      const earnedXp = getScheduleXp(schedule, habit);
+      appData.user.xp = Number(appData.user.xp || 0) + earnedXp;
       if (appData.user.xp >= Number(appData.user.xpToNextLevel || 1000)) {
         appData.user.level = Number(appData.user.level || 0) + 1;
         appData.user.xpToNextLevel = Number(appData.user.xpToNextLevel || 1000) + 1000;
       }
     } else if (status !== "completed" && alreadyCompleted) {
-      appData.user.xp = Math.max(0, Number(appData.user.xp || 0) - Number(habit.xp || 0));
+      const schedule = (appData.schedule[date] || []).find((item) => item.habitId === habit.id);
+      const earnedXp = getScheduleXp(schedule, habit);
+      appData.user.xp = Math.max(0, Number(appData.user.xp || 0) - earnedXp);
     }
     if (item && check) {
       item.classList.remove("done", "in-progress", "missed", "completed");
@@ -436,10 +440,20 @@ const habitEndTime = document.getElementById("habit-end-time");
 const habitXpPreview = document.getElementById("habit-xp-preview");
 function calculateHabitXp(timeType, startTime, endTime) {
   if (timeType === "all-day") return 100;
+  if (!startTime || !endTime) return 0;
   const [startHour, startMinute] = startTime.split(":").map(Number);
   const [endHour, endMinute] = endTime.split(":").map(Number);
   const duration = (endHour * 60 + endMinute - (startHour * 60 + startMinute)) / 60;
   return duration > 0 ? Math.round(duration * 30) : 0;
+}
+function getScheduleXp(schedule, habit) {
+  if (Number.isFinite(Number(schedule?.xp))) return Number(schedule.xp);
+  const startTime = schedule?.startTime || habit?.startTime;
+  const endTime = schedule?.endTime || habit?.endTime;
+  const timeType = schedule?.timeType || habit?.timeType;
+  if (timeType === "all-day" || schedule?.time === "整天" || schedule?.time === "全天") return 100;
+  if (startTime && endTime) return calculateHabitXp("range", startTime, endTime);
+  return Number(habit?.xp || 0);
 }
 function updateHabitTimeFields() {
   const allDay = habitTimeType.value === "all-day";
@@ -567,6 +581,10 @@ function createAutomaticSchedules(habit) {
       habitId: habit.id,
       title: habit.name,
       time: habit.time,
+      timeType: habit.timeType,
+      startTime: habit.startTime,
+      endTime: habit.endTime,
+      xp: Number(habit.xp || 0),
       note: ""
     });
   }
@@ -630,25 +648,23 @@ function renderCalendar() {
 const dayScheduleModal = document.getElementById("day-schedule-modal");
 let selectedDayScheduleDate = null;
 function updateScheduleTimeOptions(habit, selectedTime = "") {
-  const timeSelect = document.getElementById("schedule-time");
-  timeSelect.innerHTML = "";
+  const startInput = document.getElementById("schedule-start");
+  const endInput = document.getElementById("schedule-end");
   if (!habit) {
-    timeSelect.add(new Option("請先選擇習慣", ""));
+    startInput.value = "";
+    endInput.value = "";
     return;
   }
-  const options = [];
-  if (habit.timeType === "all-day" || habit.time === "整天" || habit.time === "全天") {
-    options.push({ value: "整天", label: "整天" });
-  } else if (habit.startTime && habit.endTime) {
-    options.push({ value: `${habit.startTime}-${habit.endTime}`, label: `${habit.startTime} - ${habit.endTime}` });
-  } else if (habit.time) {
-    options.push({ value: habit.time, label: habit.time });
-  }
-  if (selectedTime && !options.some((option) => option.value === selectedTime)) {
-    options.push({ value: selectedTime, label: `${selectedTime}（目前日程）` });
-  }
-  options.forEach((option) => timeSelect.add(new Option(option.label, option.value)));
-  if (selectedTime) timeSelect.value = selectedTime;
+  const [selectedStart, selectedEnd] = selectedTime.includes("-") ? selectedTime.split("-") : [];
+  startInput.value = selectedStart || habit.startTime || "";
+  endInput.value = selectedEnd || habit.endTime || "";
+  updateScheduleXpPreview(habit);
+}
+function updateScheduleXpPreview(habit = appData.habits.find((item) => item.id === document.getElementById("schedule-habit").value)) {
+  const startTime = document.getElementById("schedule-start").value;
+  const endTime = document.getElementById("schedule-end").value;
+  const xp = calculateHabitXp("range", startTime, endTime);
+  document.getElementById("schedule-xp-preview").textContent = xp > 0 ? `這筆日程完成後可獲得：${xp} XP` : "請設定有效的開始與結束時間";
 }
 function removeSchedule(key) {
   delete events[key];
@@ -691,8 +707,10 @@ function openDayScheduleModal(key) {
         : schedule.status || "in-progress";
       item.innerHTML = `<div><strong></strong><span></span><em></em></div><div class="day-schedule-actions"><button class="text-btn edit-schedule-item" type="button">編輯</button><button class="text-btn delete-schedule-item" type="button">刪除</button></div>`;
       item.querySelector("strong").textContent = schedule.title;
-      item.querySelector("span").textContent = schedule.time || "整天";
-      item.querySelector("em").textContent = status === "completed" ? "已完成" : status === "missed" ? "未完成" : "進行中";
+      const habit = appData.habits.find((entry) => entry.id === schedule.habitId);
+      const scheduleTime = schedule.startTime && schedule.endTime ? `${schedule.startTime} - ${schedule.endTime}` : schedule.time || "整天";
+      item.querySelector("span").textContent = scheduleTime;
+      item.querySelector("em").textContent = `${status === "completed" ? "已完成" : status === "missed" ? "未完成" : "進行中"} · ${getScheduleXp(schedule, habit)} XP`;
       item.querySelector(".edit-schedule-item").addEventListener("click", () => {
         dayScheduleModal.classList.remove("open");
         openScheduleModal(key, schedule.id);
@@ -743,6 +761,8 @@ document.getElementById("close-schedule-modal").addEventListener("click", () => 
 document.getElementById("schedule-habit").addEventListener("change", (event) => {
   updateScheduleTimeOptions(appData.habits.find((habit) => habit.id === event.target.value));
 });
+document.getElementById("schedule-start").addEventListener("input", () => updateScheduleXpPreview());
+document.getElementById("schedule-end").addEventListener("input", () => updateScheduleXpPreview());
 document.getElementById("save-schedule").addEventListener("click", () => {
   const dateValue = document.getElementById("schedule-date").value;
   const habitId = document.getElementById("schedule-habit").value;
@@ -750,7 +770,13 @@ document.getElementById("save-schedule").addEventListener("click", () => {
   if (!dateValue || !habit) return;
   selectedScheduleDate = dateValue;
   const title = habit.name;
-  const time = document.getElementById("schedule-time").value;
+  const startTime = document.getElementById("schedule-start").value;
+  const endTime = document.getElementById("schedule-end").value;
+  const xp = calculateHabitXp("range", startTime, endTime);
+  if (!startTime || !endTime || xp <= 0) {
+    window.alert("結束時間必須晚於開始時間。");
+    return;
+  }
   const existingSchedule = editingScheduleId
     ? (appData.schedule[editingScheduleDate] || []).find((item) => item.id === editingScheduleId)
     : null;
@@ -776,7 +802,11 @@ document.getElementById("save-schedule").addEventListener("click", () => {
     id: editingScheduleId || `schedule-${Date.now()}`,
     habitId,
     title,
-    time,
+    time: `${startTime}-${endTime}`,
+    timeType: "range",
+    startTime,
+    endTime,
+    xp,
     note: document.getElementById("schedule-note").value.trim()
   };
   if (editingScheduleId) {
@@ -956,13 +986,14 @@ function formatToday() {
   document.getElementById("today-label").textContent = `${weekday}，${date.getMonth() + 1} 月 ${date.getDate()} 日`;
   document.getElementById("welcome-name").textContent = appData.user.name;
 }
-function createHabitItem(habit, index) {
+function createHabitItem(habit, index, schedule = null) {
   const item = document.createElement("article");
   const status = getHabitStatus(habit);
   item.className = `habit-item ${status}`;
-  item.innerHTML = `<button class="check" aria-label="習慣狀態"></button><div class="habit-icon ${habit.icon || "purple"}">✦</div><div class="habit-main"><strong></strong><span></span></div><div class="habit-xp">+${habit.xp} XP</div>`;
+  item.innerHTML = `<button class="check" aria-label="習慣狀態"></button><div class="habit-icon ${habit.icon || "purple"}">✦</div><div class="habit-main"><strong></strong><span></span></div>${schedule ? `<div class="habit-xp">+${getScheduleXp(schedule, habit)} XP</div>` : ""}`;
   item.querySelector("strong").textContent = habit.name;
-  item.querySelector("span").textContent = `${habit.time} · ${habit.frequency}`;
+  const scheduleTime = schedule?.startTime && schedule?.endTime ? `${schedule.startTime} - ${schedule.endTime}` : schedule?.time || habit.time;
+  item.querySelector("span").textContent = `${scheduleTime} · ${habit.frequency}`;
   bindHabitCheck(item.querySelector(".check"), habit);
   item.dataset.habitIndex = index;
   return item;
@@ -1167,13 +1198,14 @@ function renderHabitViews() {
   todayList.innerHTML = "";
   library.innerHTML = "";
   const todayKey = dateKey(new Date());
-  const todayHabitIds = new Set((appData.schedule[todayKey] || [])
+  const todaySchedules = appData.schedule[todayKey] || [];
+  const todayHabitIds = new Set(todaySchedules
     .map((schedule) => schedule.habitId)
     .filter(Boolean));
   appData.habits.forEach((habit, index) => {
     const isToday = todayHabitIds.has(habit.id)
       || (events[todayKey] || []).includes(habit.name);
-    if (isToday) todayList.appendChild(createHabitItem(habit, index));
+    if (isToday) todayList.appendChild(createHabitItem(habit, index, todaySchedules.find((schedule) => schedule.habitId === habit.id)));
     const row = createHabitItem(habit, index);
     row.classList.add("habit-details-trigger");
     row.addEventListener("click", (event) => {
