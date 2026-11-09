@@ -36,7 +36,7 @@ const initialAppData = {
 };
 const supabaseConfig = window.HABITLY_SUPABASE_CONFIG || {};
 const supabaseEnabled = Boolean(window.supabase && supabaseConfig.url && supabaseConfig.anonKey);
-const supabase = supabaseEnabled ? window.supabase.createClient(supabaseConfig.url, supabaseConfig.anonKey) : null;
+const supabaseClient = supabaseEnabled ? window.supabase.createClient(supabaseConfig.url, supabaseConfig.anonKey) : null;
 function readObject(key, fallback) {
   const clone = () => JSON.parse(JSON.stringify(fallback));
   const stored = localStorage.getItem(key);
@@ -166,7 +166,7 @@ function remoteEmail(handle) {
 
 async function saveRemoteData() {
   if (!supabaseEnabled || !supabaseUser) return;
-  const { error } = await supabase.from("habitly_profiles").upsert({
+  const { error } = await supabaseClient.from("habitly_profiles").upsert({
     user_id: supabaseUser.id,
     data: JSON.parse(JSON.stringify(appData)),
     updated_at: new Date().toISOString()
@@ -175,7 +175,7 @@ async function saveRemoteData() {
 }
 
 async function loadRemoteData(user) {
-  const { data, error } = await supabase.from("habitly_profiles").select("data").eq("user_id", user.id).maybeSingle();
+  const { data, error } = await supabaseClient.from("habitly_profiles").select("data").eq("user_id", user.id).maybeSingle();
   if (error) throw new Error(`無法讀取帳號資料：${error.message}`);
   if (data?.data) {
     Object.keys(appData).forEach((key) => delete appData[key]);
@@ -212,7 +212,7 @@ async function registerWithSupabase(handle, password, displayName) {
     setAuthError("register-error", "請填寫暱稱、使用者 ID，並使用至少 6 個字元的密碼。");
     return;
   }
-  const { data, error } = await supabase.auth.signUp({ email: remoteEmail(handle), password });
+  const { data, error } = await supabaseClient.auth.signUp({ email: remoteEmail(handle), password });
   if (error) {
     setAuthError("register-error", error.message);
     return;
@@ -232,7 +232,7 @@ async function registerWithSupabase(handle, password, displayName) {
 }
 
 async function signInWithSupabase(handle, password) {
-  const { data, error } = await supabase.auth.signInWithPassword({ email: remoteEmail(handle), password });
+  const { data, error } = await supabaseClient.auth.signInWithPassword({ email: remoteEmail(handle), password });
   if (error || !data.user) {
     setAuthError("login-error", error?.message || "使用者 ID 或密碼錯誤。");
     return;
@@ -247,7 +247,7 @@ async function signInWithSupabase(handle, password) {
 
 let supabaseUser = null;
 if (supabaseEnabled) {
-  supabase.auth.getSession().then(async ({ data, error }) => {
+  supabaseClient.auth.getSession().then(async ({ data, error }) => {
     if (error) {
       setAuthError("login-error", `無法取得登入狀態：${error.message}`);
       return;
@@ -899,7 +899,7 @@ document.getElementById("save-profile").addEventListener("click", () => {
         newPasswordInput.focus();
         return;
       }
-      supabase.auth.updateUser({ password: newPasswordInput.value }).then(({ error }) => {
+      supabaseClient.auth.updateUser({ password: newPasswordInput.value }).then(({ error }) => {
         if (error) window.alert(`密碼更新失敗：${error.message}`);
       });
     } else if (currentPasswordInput.value !== account.password) {
@@ -1333,7 +1333,7 @@ document.getElementById("send-friend-request").addEventListener("click", () => {
 
 document.getElementById("logout").addEventListener("click", () => {
   if (supabaseEnabled) {
-    supabase.auth.signOut().then(({ error }) => {
+    supabaseClient.auth.signOut().then(({ error }) => {
       if (error) {
         window.alert(`登出失敗：${error.message}`);
         return;
