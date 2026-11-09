@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Habitly｜把小事做成大事</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <section class="auth-screen" id="auth-screen">
+      <div class="auth-card">
+        <div class="auth-logo"><span class="brand-mark">H</span><strong>habitly</strong></div>
+        <p class="eyebrow">建立你的日常</p>
+        <h1 id="auth-title">登入 Habitly</h1>
+        <p class="auth-subtitle" id="auth-subtitle">登入後繼續管理你的習慣與日程。</p>
+        <form id="login-form" class="auth-form">
+          <label>使用者 ID<input id="login-handle" autocomplete="username" placeholder="例如：anlin" required /></label>
+          <label>密碼<input id="login-password" type="password" autocomplete="current-password" placeholder="輸入密碼" required /></label>
+          <p class="auth-error" id="login-error"></p>
+          <button class="primary-btn full" type="submit">登入</button>
+        </form>
+        <form id="register-form" class="auth-form hidden">
+          <label>暱稱<input id="register-name" maxlength="20" placeholder="你的暱稱" required /></label>
+          <label>使用者 ID<div class="handle-input"><span>@</span><input id="register-handle" maxlength="30" autocomplete="username" placeholder="username" required /></div></label>
+          <label>密碼<input id="register-password" type="password" minlength="6" autocomplete="new-password" placeholder="至少 6 個字元" required /></label>
+          <p class="auth-error" id="register-error"></p>
+          <button class="primary-btn full" type="submit">建立帳號</button>
+        </form>
+        <button class="auth-switch" id="toggle-auth" type="button">還沒有帳號？註冊</button>
+      </div>
+    </section>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand"><span class="brand-mark">H</span><span>habitly</span></div>
+        <button class="profile-card" id="edit-profile" type="button">
+          <div class="avatar avatar-indigo profile-avatar">林</div>
+          <div><strong class="profile-name">林小安</strong><span>Level 0 · 探索者</span></div>
+          <span class="more-btn" aria-label="更多選項">•••</span>
+        </button>
+        <nav class="main-nav" aria-label="主要導覽">
+          <button class="nav-item active" data-view="overview"><span>◈</span>總覽</button>
+          <button class="nav-item" data-view="habits"><span>✓</span>我的習慣</button>
+          <button class="nav-item" data-view="calendar"><span>▣</span>日程表</button>
+          <button class="nav-item" data-view="community"><span>◎</span>社群</button>
+          <button class="nav-item" data-view="leaderboard"><span>♛</span>排行榜</button>
+        </nav>
+        <div class="sidebar-bottom">
+          <button class="nav-item" id="open-settings" type="button"><span>⚙</span>設定</button>
+          <div class="streak-card">
+            <div class="streak-icon">♨</div>
+            <div><strong>連續 0 天</strong><span>開始你的第一天吧！</span></div>
+          </div>
+        </div>
+      </aside>
+
+      <main class="content">
+        <header class="topbar">
+          <div class="mobile-brand"><span class="brand-mark">H</span> habitly</div>
+          <div class="search"><span>⌕</span><input aria-label="搜尋" placeholder="搜尋習慣、朋友..." /></div>
+          <div class="top-actions"><button class="icon-btn">♧</button><button class="icon-btn has-dot">♢</button><button class="avatar avatar-small profile-avatar" id="top-profile" aria-label="編輯個人檔案">林</button><button class="logout-btn" id="logout" type="button">登出</button></div>
+        </header>
+
+        <section class="view active" id="overview">
+          <div class="welcome-row">
+            <div><p class="eyebrow" id="today-label"></p><h1>早安，<span id="welcome-name">小安</span> <span>✦</span></h1><p class="subtitle">今天也一起，把理想變成日常。</p></div>
+          </div>
+          <div class="stats-grid">
+            <article class="stat-card highlight"><div class="stat-label">本週完成率 <span class="info">i</span></div><div class="stat-value" id="weekly-completion-rate">0<span>%</span></div><div class="progress completion-progress"><i id="weekly-completion-progress" style="width:0%"></i></div><div class="stat-foot" id="weekly-completion-foot">完成第一個習慣後開始累積</div></article>
+            <article class="stat-card"><div class="stat-label">目前經驗值</div><div class="stat-value" id="user-xp">0<span class="unit"> XP</span></div><div class="level-line"><span id="user-level">Lv.0</span><span id="user-xp-next">1,000 XP to Lv.1</span></div><div class="progress pale"><i id="user-xp-progress" style="width:0%"></i></div></article>
+            <article class="stat-card"><div class="stat-label">最佳連續紀錄</div><div class="stat-value" id="user-best-streak">0<span class="unit"> 天</span></div><div class="stat-foot"><span class="fire">♨</span> 開始你的第一個紀錄</div></article>
+          </div>
+          <div class="section-heading"><div><h2>今日習慣 <span class="count" id="today-habit-count">0</span></h2><p>完成每天的小目標，累積不平凡的自己。</p></div><button class="text-btn" data-view-link="calendar">查看日程表 →</button></div>
+          <div class="habit-list">
+          </div>
+          <div class="dashboard-bottom">
+            <article class="panel week-panel"><div class="panel-title"><div><h2>本週進度</h2><p>保持穩定，你做得很棒！</p></div><button class="select-btn">本週⌄</button></div><div class="week-chart"><div class="y-axis"><span>100%</span><span>75%</span><span>50%</span><span>25%</span><span>0%</span></div><div class="chart-area"><div class="grid-lines"><i></i><i></i><i></i><i></i><i></i></div><div class="bars" id="weekly-progress-bars"></div></div></div></article>
+            <article class="panel challenge-panel"><div class="panel-title"><div><h2>社群挑戰</h2><p>和大家一起完成目標</p></div><button class="text-btn" data-view-link="community">查看全部 →</button></div><div class="challenge"><div class="challenge-avatars"><span class="avatar avatar-coral">Y</span><span class="avatar avatar-yellow">K</span><span class="avatar avatar-blue">M</span><span class="avatar more-avatar">+12</span></div><strong>30 天早起挑戰</strong><div class="challenge-meta"><span>◷ 還有 18 天</span><span>68% 完成</span></div><div class="progress"><i style="width:68%"></i></div></div><div class="challenge"><div class="challenge-avatars"><span class="avatar avatar-green">A</span><span class="avatar avatar-purple">J</span><span class="avatar more-avatar">+8</span></div><strong>每日喝水 2000ml</strong><div class="challenge-meta"><span>◷ 還有 6 天</span><span>42% 完成</span></div><div class="progress orange-progress"><i style="width:42%"></i></div></div></article>
+          </div>
+        </section>
+
+        <section class="view" id="habits"><div class="page-heading"><div><p class="eyebrow">習慣管理</p><h1>我的習慣</h1><p class="subtitle">集中查看與管理你建立的所有習慣。</p></div><button class="primary-btn" id="open-add"><span>＋</span> 新增習慣</button></div><div class="habit-library" id="habit-library"></div></section>
+        <section class="view" id="calendar"><div class="page-heading"><div><p class="eyebrow">習慣安排</p><h1>日程表</h1><p class="subtitle">點選日期就能新增或編輯當日行程。</p></div><button class="primary-btn" id="open-add-calendar">＋ 新增日程</button></div><div class="calendar-toolbar"><button id="calendar-prev" aria-label="上一個月">‹</button><strong id="calendar-title">2024 年 10 月</strong><button id="calendar-next" aria-label="下一個月">›</button><button class="today-btn" id="calendar-today">回到今天</button></div><div class="calendar-card"><div class="calendar-days"><span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span></div><div class="calendar-grid" id="calendar-grid"></div></div></section>
+
+        <section class="view" id="community"><div class="page-heading"><div><p class="eyebrow">一起變得更好</p><h1>社群動態</h1><p class="subtitle">分享你的進步，也為別人的堅持喝采。</p></div><div class="page-actions"><button class="secondary-btn" id="open-friend">＋ 加入好友</button><button class="primary-btn" id="share-post">✦ 分享進度</button></div></div><div class="community-layout"><div class="feed"><div class="feed-tabs"><button class="selected">推薦</button><button>追蹤中</button><button>挑戰</button></div><article class="post"><div class="post-head"><div class="avatar avatar-coral">Y</div><div><strong>Yuki Chen <span class="verified">✓</span></strong><span>完成了「晨跑 5 公里」 · 2 小時前</span></div><button>•••</button></div><p>早起的第 14 天！今天的風很舒服，跑完心情也變得很好 🏃‍♀️</p><div class="post-photo gradient-run"><span>5.02 KM</span><small>morning run</small></div><div class="post-actions"><button class="like-btn">♡ <span>32</span></button><button>◌ <span>8 則留言</span></button><button class="share-action">↗</button></div></article><article class="post"><div class="post-head"><div class="avatar avatar-blue">M</div><div><strong>Mark Wang</strong><span>加入了「30 天早起挑戰」 · 5 小時前</span></div><button>•••</button></div><p>第 12 天打卡！一起加油，讓早起成為我們的超能力。</p><div class="post-actions"><button class="like-btn">♡ <span>18</span></button><button>◌ <span>3 則留言</span></button><button class="share-action">↗</button></div></article></div><aside class="community-side panel"><h2>熱門挑戰</h2><p>找到適合你的下一個目標</p><div class="side-challenge"><span class="challenge-icon mint">☀</span><div><strong>30 天早起</strong><small>1,248 人參加</small></div><button>加入</button></div><div class="side-challenge"><span class="challenge-icon orange">♨</span><div><strong>每日喝水</strong><small>856 人參加</small></div><button>加入</button></div><div class="side-challenge"><span class="challenge-icon purple">♧</span><div><strong>閱讀 10 頁</strong><small>632 人參加</small></div><button>加入</button></div></aside></div></section>
+
+        <section class="view" id="leaderboard"><div class="page-heading"><div><p class="eyebrow">互相激勵，一起成長</p><h1>本週排行榜</h1><p class="subtitle">每一次完成，都是值得被看見的進步。</p></div><button class="select-btn large">本週 ⌄</button></div><div class="leaderboard-card panel"><div class="podium"><div class="podium-person second"><div class="avatar avatar-coral">Y</div><span class="rank">2</span><strong>Yuki</strong><small>2,910 XP</small></div><div class="podium-person first"><div class="crown">♛</div><div class="avatar avatar-indigo">林</div><span class="rank">1</span><strong>你 · 小安</strong><small>3,240 XP</small></div><div class="podium-person third"><div class="avatar avatar-yellow">K</div><span class="rank">3</span><strong>Kevin</strong><small>2,780 XP</small></div></div><div class="ranking-list"><div><span class="list-rank">4</span><div class="avatar avatar-green">A</div><strong>Amy Lin</strong><span class="rank-xp">2,450 XP</span></div><div><span class="list-rank">5</span><div class="avatar avatar-purple">J</div><strong>Jason Wu</strong><span class="rank-xp">2,210 XP</span></div><div><span class="list-rank">6</span><div class="avatar avatar-blue">M</div><strong>Mark Wang</strong><span class="rank-xp">1,980 XP</span></div></div></div></section>
+      </main>
+    </div>
+    <div class="modal-backdrop" id="modal"><div class="modal"><button class="close-modal" id="close-modal">×</button><p class="eyebrow">建立新習慣</p><h2>今天想養成什麼？</h2><label>習慣名稱<input id="habit-name" placeholder="例如：冥想 10 分鐘" /></label><label>頻率<select id="habit-frequency-type"><option value="daily">每天</option><option value="weekly">每週指定星期</option><option value="custom">自訂日期／頻率</option></select></label><div id="habit-weekday-options" class="weekday-options hidden"><span>選擇星期（可複選）</span><label><input type="checkbox" value="1">一</label><label><input type="checkbox" value="2">二</label><label><input type="checkbox" value="3">三</label><label><input type="checkbox" value="4">四</label><label><input type="checkbox" value="5">五</label><label><input type="checkbox" value="6">六</label><label><input type="checkbox" value="0">日</label></div><label id="habit-custom-frequency-field" class="hidden">自訂頻率<input id="habit-custom-frequency" maxlength="40" placeholder="例如：每月 1、15 日" /></label><label>時間類型<select id="habit-time-type"><option value="range">指定時段</option><option value="all-day">整天</option></select></label><div id="habit-time-range" class="modal-row"><label>開始時間<input id="habit-start-time" type="time" value="08:00" /></label><label>結束時間<input id="habit-end-time" type="time" value="09:00" /></label></div><p id="habit-xp-preview" class="modal-help">預計獎勵：30 XP</p><button class="primary-btn full" id="create-habit">建立習慣</button></div></div>
+    <div class="modal-backdrop" id="profile-modal"><div class="modal profile-modal"><button class="close-modal" id="close-profile-modal">×</button><p class="eyebrow">個人檔案</p><h2>編輯你的資料</h2><div class="profile-preview"><div class="avatar avatar-indigo profile-avatar" id="profile-preview-avatar">林</div><div><strong class="profile-name">林小安</strong><span class="profile-handle">@anlin</span><span>你的個人檔案會顯示在社群貼文中</span></div></div><label>暱稱<input id="profile-name-input" maxlength="20" placeholder="輸入暱稱" /></label><label>使用者 ID<div class="handle-input"><span>@</span><input id="profile-handle-input" maxlength="30" placeholder="username" /></div><small id="handle-change-hint">30 天內最多可更改 2 次</small></label><label>自我介紹<textarea id="profile-bio-input" maxlength="100" placeholder="介紹一下自己正在養成的習慣"></textarea></label><label>目前目標<select id="profile-goal-input"><option>探索者</option><option>穩定養成中</option><option>挑戰極限</option><option>生活平衡家</option></select></label><div class="avatar-colors" aria-label="選擇頭像顏色"><button type="button" class="color-choice avatar-indigo selected" data-color="avatar-indigo">林</button><button type="button" class="color-choice avatar-coral" data-color="avatar-coral">林</button><button type="button" class="color-choice avatar-green" data-color="avatar-green">林</button><button type="button" class="color-choice avatar-purple" data-color="avatar-purple">林</button></div><hr><p class="eyebrow">帳號安全</p><label>目前密碼<input id="current-password-input" type="password" autocomplete="current-password" placeholder="輸入目前密碼" /></label><label>新密碼<input id="new-password-input" type="password" minlength="6" autocomplete="new-password" placeholder="至少 6 個字元" /></label><label>確認新密碼<input id="confirm-password-input" type="password" minlength="6" autocomplete="new-password" placeholder="再次輸入新密碼" /></label><button class="primary-btn full" id="save-profile">儲存變更</button></div></div>
+    <div class="modal-backdrop" id="schedule-modal"><div class="modal schedule-modal"><button class="close-modal" id="close-schedule-modal">×</button><p class="eyebrow">日程安排</p><h2 id="schedule-date-title">新增日程</h2><label>日期<input id="schedule-date" type="date" required /></label><label>選擇習慣<select id="schedule-habit" required><option value="">請選擇習慣</option></select></label><div class="modal-row"><label>時間<select id="schedule-time" required><option value="">請先選擇習慣</option></select></label><label>提醒<select id="schedule-reminder"><option>不提醒</option><option>提前 10 分鐘</option><option>提前 30 分鐘</option></select></label></div><label>備註<textarea id="schedule-note" maxlength="120" placeholder="補充這天的安排"></textarea></label><div class="schedule-actions"><button class="text-btn" id="delete-schedule">刪除行程</button><button class="primary-btn" id="save-schedule">儲存行程</button></div></div></div>
+    <div class="modal-backdrop" id="day-schedule-modal"><div class="modal"><button class="close-modal" id="close-day-schedule-modal">×</button><p class="eyebrow">當日安排</p><h2 id="day-schedule-title">當日習慣</h2><div id="day-schedule-list" class="day-schedule-list"></div><div class="schedule-actions"><button class="text-btn" id="close-day-schedule">關閉</button><button class="primary-btn" id="add-day-schedule">新增日程</button></div></div></div>
+    <div class="modal-backdrop" id="habit-details-modal"><div class="modal habit-details-modal"><button class="close-modal" id="close-habit-details-modal">×</button><p class="eyebrow">習慣紀錄</p><div class="modal-heading-actions"><h2 id="habit-details-title">習慣詳情</h2><button class="text-btn" id="open-habit-settings" type="button">習慣設定</button></div><label>查看月份<input id="habit-details-month" type="month" /></label><div id="habit-details-list" class="habit-details-list"></div></div></div>
+    <div class="modal-backdrop" id="settings-modal"><div class="modal settings-modal"><button class="close-modal" id="close-settings-modal">×</button><p class="eyebrow">偏好設定</p><h2>設定</h2><div class="setting-row"><div><strong>習慣提醒</strong><span>在習慣開始前收到通知</span></div><label class="switch"><input id="setting-notifications" type="checkbox" checked /><i></i></label></div><div class="setting-row"><div><strong>完成音效</strong><span>完成習慣時播放提示音</span></div><label class="switch"><input id="setting-sounds" type="checkbox" checked /><i></i></label></div><label>主題<select id="setting-theme"><option value="light">淺色模式</option><option value="dark">深色模式</option><option value="system">跟隨系統</option></select></label><label>每週開始日<select id="setting-week-start"><option>星期一</option><option>星期日</option></select></label><label>語言<select id="setting-language"><option value="zh">繁體中文</option><option value="en">English</option></select></label><div class="setting-row"><div><strong>私人帳號</strong><span>只有好友能看到你的社群貼文</span></div><label class="switch"><input id="setting-private" type="checkbox" /><i></i></label></div><button class="primary-btn full" id="save-settings">儲存設定</button><button class="danger-btn full" id="reset-account" type="button">重製帳戶資料</button></div></div>
+    <div class="modal-backdrop" id="reflection-modal"><div class="modal reflection-modal"><button class="close-modal" id="close-reflection-modal">×</button><p class="eyebrow">習慣紀錄</p><h2 id="reflection-title">記錄這次體驗</h2><p class="modal-help">可記錄任何狀態，並加入多張照片或影片。</p><label>紀錄狀態<select id="reflection-status"><option value="completed">已完成</option><option value="in-progress">進行中</option><option value="missed">未完成</option></select></label><label>體驗筆記<textarea id="reflection-note" maxlength="300" placeholder="今天的感受或進度如何？"></textarea></label><label>上傳照片或影片<input id="reflection-media" type="file" accept="image/*,video/*" multiple /></label><div id="reflection-media-list" class="reflection-media-list"></div><div class="modal-actions"><button class="secondary-btn" id="save-reflection" type="button">儲存紀錄</button><button class="primary-btn" id="complete-reflection" type="button">完成並儲存</button></div></div></div>
+    <div class="modal-backdrop" id="habit-settings-modal"><div class="modal"><button class="close-modal" id="close-habit-settings" type="button">×</button><p class="eyebrow">習慣設定</p><h2>編輯習慣</h2><label>習慣名稱<input id="settings-habit-name" maxlength="40" /></label><label>時間類型<select id="settings-habit-time-type"><option value="range">指定時段</option><option value="all-day">整天</option></select></label><div id="settings-habit-time-range" class="modal-row"><label>開始時間<input id="settings-habit-start" type="time" /></label><label>結束時間<input id="settings-habit-end" type="time" /></label></div><label>圖示顏色<select id="settings-habit-icon"><option value="purple">紫色</option><option value="mint">綠色</option><option value="blue">藍色</option><option value="orange">橘色</option></select></label><p id="settings-habit-xp" class="modal-help"></p><button class="primary-btn full" id="save-habit-settings" type="button">儲存習慣設定</button></div></div>
+    <div class="modal-backdrop" id="friend-modal"><div class="modal friend-modal"><button class="close-modal" id="close-friend-modal">×</button><p class="eyebrow">擴展你的社群</p><h2>加入好友</h2><p class="modal-help">輸入好友的使用者 ID，和對方一起完成習慣。</p><label>使用者 ID<div class="handle-input"><span>@</span><input id="friend-id-input" maxlength="30" placeholder="username" /></div></label><button class="primary-btn full" id="send-friend-request">送出好友邀請</button></div></div>
+    <script src="supabase-config.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
