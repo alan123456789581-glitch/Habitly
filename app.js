@@ -235,6 +235,19 @@ async function registerWithSupabase(handle, password, displayName) {
 async function signInWithSupabase(handle, password) {
   const { data, error } = await supabaseClient.auth.signInWithPassword({ email: remoteEmail(handle), password });
   if (error || !data.user) {
+    const legacyAccount = authAccounts[handle];
+    if (legacyAccount?.password === password && legacyAccount.data) {
+      const migration = await supabaseClient.auth.signUp({ email: remoteEmail(handle), password });
+      if (!migration.error && migration.data.user) {
+        Object.keys(appData).forEach((key) => delete appData[key]);
+        Object.assign(appData, JSON.parse(JSON.stringify(legacyAccount.data)));
+        appData.user = { ...appData.user, handle, id: migration.data.user.id };
+        supabaseUser = migration.data.user;
+        await saveRemoteData();
+        finishRemoteLogin(migration.data.user);
+        return;
+      }
+    }
     setAuthError("login-error", error?.message || "使用者 ID 或密碼錯誤。");
     return;
   }
