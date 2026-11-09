@@ -5,7 +5,7 @@ const initialDateKey = (offset) => {
   date.setDate(date.getDate() + offset);
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 };
-const initialAppData = {
+const initialAppData = {const registering = register.classList.contains("hidden");
   schemaVersion: 3,
   user: {
     id: "usr_alan123",
